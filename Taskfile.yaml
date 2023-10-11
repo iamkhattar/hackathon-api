@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  install:
+    cmds:
+      - pdm install
+  run:
+    cmds:
+      - pdm run src/hackathon_api/main.py
+  test:
+    cmds:
+      - pdm test
+  lint:
+    cmds:
+      - pdm run ruff src
+      - pdm run black src
