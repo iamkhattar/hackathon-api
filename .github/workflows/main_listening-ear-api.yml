@@ -17,21 +17,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python version
-        uses: actions/setup-python@v1
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+          cache: true
 
-      - name: Create and start virtual environment
+      - name: Check output
         run: |
-          python -m venv venv
-          source venv/bin/activate
-      
+          echo ${{ steps.setup-pdm.outputs.pdm-bin }}
+          echo ${{ steps.setup-pdm.outputs.pdm-version }}
+          echo ${{ steps.setup-pdm.outputs.python-path }}
+          echo ${{ steps.setup-pdm.outputs.python-version }}
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-      
+        run: pdm install -v && pdm info
+
+      - name: Lint API
+        run: pdm run ruff src
+
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v2
         with:
