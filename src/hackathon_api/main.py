@@ -12,7 +12,6 @@ from config import settings
 from sqlmodel import Session, create_engine, select
 
 app = FastAPI()
-# engine = create_engine("postgresql://user:secret@localhost:5432/hackathon", echo=True)
 engine = create_engine(settings.DB_CONNECTION_STRING, echo=True)
 
 
@@ -29,18 +28,14 @@ def on_startup():
     create_db_and_tables(engine)
 
 
-@app.post("/users")
+@app.post("/api/v1/users")
 def register_user(user: AppUser):
     with Session(engine) as session:
-        session.add(user)
+        db_user = user
+        session.add(db_user)
         session.commit()
-
-
-@app.post("/auth-test")
-def test_auth(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]):
-    print(credentials.username)
-    print(credentials.password)
-
+        session.refresh(db_user)
+        return db_user
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
@@ -64,13 +59,18 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
-@app.get("/users/me")
+@app.get("/api/v1/users/me")
 def whoami(current_user: Annotated[AppUser, Depends(get_current_user)]):
-    print(current_user)
-    print(current_user.email)
+    with Session(engine) as session:
+        user = session.exec(select(AppUser)
+                            .where(AppUser.email == current_user.email)).all()
+        if not user:
+            return Response(status_code=401)
+        return user[0]
 
 
-@app.post("/users/login")
+
+@app.post("/api/v1/users/login")
 def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]):
     email = credentials.username
     password = credentials.password

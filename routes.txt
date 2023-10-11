@@ -1,0 +1,156 @@
+
+POST /api/v1/users ---> Register a User (201)
+REQ: {
+   email: "",
+   first_name: "",
+   last_name: "",
+   type: "worker",
+   phone: ""
+}
+RES: {
+   id: 12412421,
+   email: "",
+   first_name: "",
+   last_name: "",
+   type: "worker",
+   phone: ""
+}
+
+
+POST /api/v1/users/login ----> Login a User
+REQ: Authorization: Basic
+RES: Authorization: Bearer
+
+
+GET /api/v1/users/me
+RES: {
+   id: 123123
+   email: "",
+   first_name: "",
+   last_name: "",
+   type: "worker",
+   phone: ""
+}
+
+
+
+
+GET /api/v1/appointments - Returns appointments for current user
+RES [
+    {
+        id: 123,
+        client_id: 123,
+        worker_email: "",
+        timestamp: "",
+        lat: "",
+        long: "",
+        address: ""
+    }
+]
+
+GET /api/v1/appointments/{id} - Returns appointments for current user
+
+{
+        id: 123,
+        client_email: "",
+        worker_email: "",
+        timestamp: "",
+        lat: "",
+        long: "",
+        address: ""
+}
+
+POST /api/v1/appointments
+REQ:
+{
+        client_email: "",
+        worker_email: "",
+        timestamp: "",
+        lat: "",
+        long: "",
+        address: ""
+}
+
+REST:
+{
+        id: 123134,
+        client_email: "",
+        worker_email: "",
+        timestamp: "",
+        lat: "",
+        long: "",
+        address: ""
+}
+
+
+DELETE /api/v1/appointments/{id}
+
+
+
+
+GET /api/v1/clients
+
+[
+    {
+        id: 123124,
+        email: "",
+        first_name: "",
+        last_name: ""
+        phone: "",
+        good_rating_count: 1251,
+        bad_rating_count: 121,
+        neutral_rating_count: 12
+    }
+]
+
+GET /api/v1/clients/{id}
+
+{
+        id: 123124,
+        email: "",
+        first_name: "",
+        last_name: ""
+        phone: "",
+        good_rating_count: 1251,
+        bad_rating_count: 121,
+        neutral_rating_count: 12
+}
+
+
+DELETE /api/v1/clients/{id}
+
+POST /api/v1/clients
+
+{
+        email: "",
+        first_name: "",
+        last_name: ""
+        phone: ""
+}
+
+GET /api/v1/ratings/{clientId}
+
+[
+    {
+        id: 12512514,
+        client_id: 124124,
+        value: 1,
+        notes: "",
+        appointment_id: 124312421
+    }
+]
+
+POST /api/v1/ratings
+
+{
+        client_id: 124124,
+        value: 1,
+        notes: "",
+        appointment_id: 124312421
+    }
+
+DELETE /api/v1/ratings/{ratingId}
+
+
+
+Supervisor
