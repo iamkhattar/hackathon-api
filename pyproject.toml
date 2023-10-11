@@ -1,7 +1,6 @@
 [project]
-name = ""
-version = ""
-description = ""
+name = "hackthon-api"
+version = "1.0.0"
 authors = [
     {name = "Conor McKillop", email = "contact@cmckillop.dev"},
 ]
@@ -15,3 +14,9 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "MIT"}
 
+[tool.poetry]
+name = "hackthon-api"
+version = "1.0.0"
+
+[tool.poetry.dependencies]
+python = "^3.11"
