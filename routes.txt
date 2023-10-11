@@ -35,16 +35,34 @@ RES: {
 
 
 
-GET /api/v1/appointments - Returns appointments for current user
+GET /api/v1/appointments - Returns appointments for current user (worker, or manager)
+manager sees all appointments for today
 RES [
     {
         id: 123,
-        client_id: 123,
-        worker_email: "",
-        timestamp: "",
+        client: {
+           id: 123123
+           email: "",
+           first_name: "",
+           last_name: "",
+           type: "worker",
+           phone: ""
+        },
+        worker: {
+           id: 123123
+           email: "",
+           first_name: "",
+           last_name: "",
+           type: "worker",
+           phone: ""
+        },
+        start_time: "",
+        end_time: "",
         lat: "",
         long: "",
-        address: ""
+        address: "",
+        severity_status: "",
+        appointment_status: ""
     }
 ]
 
@@ -63,9 +81,11 @@ GET /api/v1/appointments/{id} - Returns appointments for current user
 POST /api/v1/appointments
 REQ:
 {
-        client_email: "",
-        worker_email: "",
+        client_id: "",
+        worker_id: "",
         timestamp: "",
+        start_epoch,
+        end_epoch
         lat: "",
         long: "",
         address: ""
@@ -87,6 +107,10 @@ DELETE /api/v1/appointments/{id}
 
 
 
+PUT /api/v1/appointments/{id}/{status}
+
+
+
 
 GET /api/v1/clients
 
@@ -103,19 +127,6 @@ GET /api/v1/clients
     }
 ]
 
-GET /api/v1/clients/{id}
-
-{
-        id: 123124,
-        email: "",
-        first_name: "",
-        last_name: ""
-        phone: "",
-        good_rating_count: 1251,
-        bad_rating_count: 121,
-        neutral_rating_count: 12
-}
-
 
 DELETE /api/v1/clients/{id}
 
@@ -127,30 +138,3 @@ POST /api/v1/clients
         last_name: ""
         phone: ""
 }
-
-GET /api/v1/ratings/{clientId}
-
-[
-    {
-        id: 12512514,
-        client_id: 124124,
-        value: 1,
-        notes: "",
-        appointment_id: 124312421
-    }
-]
-
-POST /api/v1/ratings
-
-{
-        client_id: 124124,
-        value: 1,
-        notes: "",
-        appointment_id: 124312421
-    }
-
-DELETE /api/v1/ratings/{ratingId}
-
-
-
-Supervisor
