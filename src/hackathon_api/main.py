@@ -1,14 +1,28 @@
-import base64
-import json
+from typing import Annotated
 
 import jwt
 import uvicorn
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Response, Depends, HTTPException, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
+from jose import JWTError
+from pydantic import BaseModel
+
 from db import create_db_and_tables, Appointment, Client, AppUser
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from config import settings
+from sqlmodel import Session, create_engine, select
 
 app = FastAPI()
-engine = create_engine("postgresql://user:secret@localhost:5432/hackathon", echo=True)
+# engine = create_engine("postgresql://user:secret@localhost:5432/hackathon", echo=True)
+engine = create_engine(settings.DB_CONNECTION_STRING, echo=True)
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 
 @app.on_event("startup")
 def on_startup():
@@ -22,31 +36,65 @@ def register_user(user: AppUser):
         session.commit()
 
 
-@app.post("/users/login")
-def login_user(req: Request):
+@app.post("/auth-test")
+def test_auth(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]):
+    print(credentials.username)
+    print(credentials.password)
+
+
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
-        authorization_header = req.headers["Authorization"]
-        credentials = authorization_header.replace("Basic ", "")
-        convertedbytes = base64.b64decode(credentials)
-        decodedsample = convertedbytes.decode("ascii")
-    except:
-        return Response(status_code=401)
-    email = decodedsample.split(":")[0].strip()
-    password = decodedsample.split(":")[1].strip()
-    if password != "codefest":
+        payload = jwt.decode(token, "secret", algorithms="HS256")
+        user = AppUser(
+            email=payload.get("email"),
+            first_name=payload.get("first_name"),
+            last_name=payload.get("last_name"),
+            type=payload.get("type"),
+            phone=payload.get("phone"),
+        )
+    except JWTError:
+        raise credentials_exception
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+@app.get("/users/me")
+def whoami(current_user: Annotated[AppUser, Depends(get_current_user)]):
+    print(current_user)
+    print(current_user.email)
+
+
+@app.post("/users/login")
+def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]):
+    email = credentials.username
+    password = credentials.password
+    if password.strip() != "codefest":
         return Response(status_code=401)
     with Session(engine) as session:
         user = session.exec(select(AppUser).where(AppUser.email == email)).all()
-        if (len(user) < 1):
+        if not user:
             return Response(status_code=401)
         user_details = AppUser.as_dict(user[0])
-        return Response(status_code=200, headers={
-            "Authorization": "Bearer " + jwt.encode(user_details, "secret", algorithm="HS256")
-        });
+        return Response(
+            status_code=200,
+            headers={
+                "Authorization": f"""Bearer {
+                jwt.encode(user_details, 'secret', algorithm='HS256')
+                }"""
+            },
+        )
 
 
 @app.get("/appointments")
-def get_appointments_for_worker():
+def get_appointments_for_worker(
+    current_user: Annotated[AppUser, Depends(get_current_user)]
+):
     with Session(engine) as session:
         appointments = session.exec(select(Appointment)).all()
         return appointments
@@ -55,7 +103,9 @@ def get_appointments_for_worker():
 @app.get("/appointments/{id}")
 def get_appointment_by_id(id):
     with Session(engine) as session:
-        appointment = session.exec(select(Appointment).where(Appointment.id == id)).all()
+        appointment = session.exec(
+            select(Appointment).where(Appointment.id == id)
+        ).all()
         return appointment
 
 
@@ -92,4 +142,4 @@ def create_client(client: Client):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=80)
+    uvicorn.run("main:app", host="0.0.0.0", port=80, reload=True)
