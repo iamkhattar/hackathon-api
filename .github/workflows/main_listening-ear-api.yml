@@ -36,6 +36,9 @@ jobs:
       - name: Lint API
         run: pdm run ruff src
 
+      - name: Export dependencies
+        run: pdm export -o requirements.txt --without-hashes
+
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v2
         with:
