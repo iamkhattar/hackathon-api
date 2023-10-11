@@ -1,4 +1,7 @@
-on: [push]
+on:
+  pull_request:
+    branches:
+      - main
 
 name: CI Hackathon API
 
@@ -10,8 +13,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup PDM
-        uses: ./
-        id: setup-pdm
+        uses: pdm-project/setup-pdm@v3
         with:
           python-version: "3.11"
           cache: true
