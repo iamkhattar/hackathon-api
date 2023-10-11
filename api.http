@@ -1,0 +1,17 @@
+POST http://localhost/api/v1/clients
+Content-Type: application/json
+
+{
+  "email": "a@mail.test",
+  "first_name": "Andy",
+  "last_name": "Smith",
+  "phone": "001001010101013"
+}
+
+###
+
+GET http://localhost/api/v1/clients
+
+
+###
+DELETE http://localhost/api/v1/clients/1

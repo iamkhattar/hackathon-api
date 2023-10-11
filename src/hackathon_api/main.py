@@ -12,9 +12,7 @@ from config import settings
 from sqlmodel import Session, create_engine, select
 
 app = FastAPI()
-# engine = create_engine("postgresql://user:secret@localhost:5432/hackathon", echo=True)
 engine = create_engine(settings.DB_CONNECTION_STRING, echo=True)
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -29,17 +27,14 @@ def on_startup():
     create_db_and_tables(engine)
 
 
-@app.post("/users")
+@app.post("/api/v1/users")
 def register_user(user: AppUser):
     with Session(engine) as session:
-        session.add(user)
+        db_user = user
+        session.add(db_user)
         session.commit()
-
-
-@app.post("/auth-test")
-def test_auth(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]):
-    print(credentials.username)
-    print(credentials.password)
+        session.refresh(db_user)
+        return db_user
 
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
@@ -64,13 +59,18 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
-@app.get("/users/me")
+@app.get("/api/v1/users/me")
 def whoami(current_user: Annotated[AppUser, Depends(get_current_user)]):
-    print(current_user)
-    print(current_user.email)
+    with Session(engine) as session:
+        user = session.exec(
+            select(AppUser).where(AppUser.email == current_user.email)
+        ).all()
+        if not user:
+            return Response(status_code=401)
+        return user[0]
 
 
-@app.post("/users/login")
+@app.post("/api/v1/users/login")
 def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())]):
     email = credentials.username
     password = credentials.password
@@ -116,29 +116,34 @@ def create_appointment(appointment: Appointment):
         session.commit()
 
 
-@app.delete("/appointments/{id}")
-def delete_appointment(id):
+@app.delete("/appointments/{appointment_id}")
+def delete_appointment(appointment_id):
     with Session(engine) as session:
-        session.delete(Appointment.id == id)
+        session.delete(Appointment.id == appointment_id)
 
 
-@app.get("/clients")
+@app.get("/api/v1/clients")
 def get_clients():
-    pass
+    with Session(engine) as session:
+        clients = session.exec(select(Client)).all()
+    return clients
 
 
-@app.get("/clients/{id}")
-def get_client_by_id(id):
-    pass
+@app.delete("/api/v1/clients/{client_id}")
+def delete_client_by_id(client_id):
+    with Session(engine) as session:
+        session.query(Client).filter(Client.id == client_id).delete()
+        session.commit()
 
 
-@app.delete("/clients/{id}")
-def delete_client_by_id(id):
-    pass
-
-
+@app.post("/api/v1/clients")
 def create_client(client: Client):
-    pass
+    with Session(engine) as session:
+        db_client = client
+        session.add(db_client)
+        session.commit()
+        session.refresh(db_client)
+        return db_client
 
 
 if __name__ == "__main__":

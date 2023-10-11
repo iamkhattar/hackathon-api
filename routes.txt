@@ -1,0 +1,140 @@
+
+POST /api/v1/users ---> Register a User (201)
+REQ: {
+   email: "",
+   first_name: "",
+   last_name: "",
+   type: "worker",
+   phone: ""
+}
+RES: {
+   id: 12412421,
+   email: "",
+   first_name: "",
+   last_name: "",
+   type: "worker",
+   phone: ""
+}
+
+
+POST /api/v1/users/login ----> Login a User
+REQ: Authorization: Basic
+RES: Authorization: Bearer
+
+
+GET /api/v1/users/me
+RES: {
+   id: 123123
+   email: "",
+   first_name: "",
+   last_name: "",
+   type: "worker",
+   phone: ""
+}
+
+
+
+
+GET /api/v1/appointments - Returns appointments for current user (worker, or manager)
+manager sees all appointments for today
+RES [
+    {
+        id: 123,
+        client: {
+           id: 123123
+           email: "",
+           first_name: "",
+           last_name: "",
+           type: "worker",
+           phone: ""
+        },
+        worker: {
+           id: 123123
+           email: "",
+           first_name: "",
+           last_name: "",
+           type: "worker",
+           phone: ""
+        },
+        start_time: "",
+        end_time: "",
+        lat: "",
+        long: "",
+        address: "",
+        severity_status: "",
+        appointment_status: ""
+    }
+]
+
+GET /api/v1/appointments/{id} - Returns appointments for current user
+
+{
+        id: 123,
+        client_email: "",
+        worker_email: "",
+        timestamp: "",
+        lat: "",
+        long: "",
+        address: ""
+}
+
+POST /api/v1/appointments
+REQ:
+{
+        client_id: "",
+        worker_id: "",
+        timestamp: "",
+        start_epoch,
+        end_epoch
+        lat: "",
+        long: "",
+        address: ""
+}
+
+REST:
+{
+        id: 123134,
+        client_email: "",
+        worker_email: "",
+        timestamp: "",
+        lat: "",
+        long: "",
+        address: ""
+}
+
+
+DELETE /api/v1/appointments/{id}
+
+
+
+PUT /api/v1/appointments/{id}/{status}
+
+
+
+
+GET /api/v1/clients
+
+[
+    {
+        id: 123124,
+        email: "",
+        first_name: "",
+        last_name: ""
+        phone: "",
+        good_rating_count: 1251,
+        bad_rating_count: 121,
+        neutral_rating_count: 12
+    }
+]
+
+
+DELETE /api/v1/clients/{id}
+
+POST /api/v1/clients
+
+{
+        email: "",
+        first_name: "",
+        last_name: ""
+        phone: ""
+}
