@@ -62,7 +62,8 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 @app.get("/api/v1/users/me")
 def whoami(current_user: Annotated[AppUser, Depends(get_current_user)]):
     with Session(engine) as session:
-        user = session.exec(select(AppUser).where(AppUser.email == current_user.email)).all()
+        user = session.exec(select(AppUser)
+                            .where(AppUser.email == current_user.email)).all()
         if not user:
             return Response(status_code=401)
         return user[0]
