@@ -9,6 +9,9 @@ dependencies = [
     "uvicorn[standard]>=0.23.2",
     "black>=23.9.1",
     "ruff>=0.0.292",
+    "sqlmodel>=0.0.8",
+    "psycopg2>=2.9.9",
+    "pyjwt>=2.8.0",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
