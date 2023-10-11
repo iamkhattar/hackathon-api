@@ -1,0 +1,17 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Conor McKillop", email = "contact@cmckillop.dev"},
+]
+dependencies = [
+    "fastapi>=0.103.2",
+    "uvicorn[standard]>=0.23.2",
+    "black>=23.9.1",
+    "ruff>=0.0.292",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
