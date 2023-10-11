@@ -4,18 +4,16 @@ name: CI Hackathon API
 
 jobs:
   api-ci:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-        os: ["ubuntu-latest"]
+    runs-on: "ubuntu-latest"
+
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup PDM
         uses: ./
         id: setup-pdm
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
           cache: true
 
       - name: Check output
