@@ -18,26 +18,9 @@ engine = create_engine(settings.DB_CONNECTION_STRING, echo=True)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables(engine)
-
-
-@app.post("/api/v1/users")
-def register_user(user: AppUser):
-    with Session(engine) as session:
-        if user.type != "worker" and user.type != "manager":
-            return Response(status_code=422)
-        db_user = user
-        session.add(db_user)
-        session.commit()
-        session.refresh(db_user)
-        return db_user
 
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
@@ -61,6 +44,18 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     if user is None:
         raise credentials_exception
     return user
+
+
+@app.post("/api/v1/users")
+def register_user(current_user: Annotated[AppUser, Depends(get_current_user)], user: AppUser):
+    with Session(engine) as session:
+        if user.type != "worker" and user.type != "manager":
+            return Response(status_code=422)
+        db_user = user
+        session.add(db_user)
+        session.commit()
+        session.refresh(db_user)
+        return db_user
 
 
 @app.get("/api/v1/users/me")
@@ -94,10 +89,17 @@ def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())
             },
         )
 
+@app.get("/api/v1/appointments-now")
+def get_todays():
+    with Session(engine) as session:
+        appointments = session.exec(
+            select(Appointment).where(
+                Appointment.start_time == datetime.now().date())).all()
+    return appointments
 
 @app.get("/api/v1/appointments")
 def get_appointments_for_worker(
-    current_user: Annotated[AppUser, Depends(get_current_user)]
+        current_user: Annotated[AppUser, Depends(get_current_user)]
 ):
     with Session(engine) as session:
         if current_user.type == "worker":
@@ -125,18 +127,18 @@ def get_appointments_for_worker(
                 })
             return response
         else:
-            now = datetime.now()
-            print("hello", now)
-            appointments = session.exec(select(Appointment).where()).all()
+            appointments = session.exec(
+                select(Appointment).where(
+                    Appointment.start_time.date() == datetime.now().date())).all()
         return appointments
 
 
-@app.get("/api/v1/appointments/{id}")
-def get_appointment_by_id(id):
+@app.get("/api/v1/appointments/{appointment_id}")
+def get_appointment_by_id(current_user: Annotated[AppUser, Depends(get_current_user)], appointment_id):
     with Session(engine) as session:
         result = session.exec(
             select(Appointment, Client, AppUser)
-            .where(Appointment.id == id)
+            .where(Appointment.id == appointment_id)
             .join(Client)
             .where(Appointment.client_id == Client.id)
             .join(AppUser)
@@ -157,7 +159,7 @@ def get_appointment_by_id(id):
 
 
 @app.post("/api/v1/appointments")
-def create_appointment(appointment: Appointment):
+def create_appointment(current_user: Annotated[AppUser, Depends(get_current_user)], appointment: Appointment):
     with Session(engine) as session:
         worker = session.exec(
             select(AppUser).where(AppUser.id == appointment.worker_id)
@@ -172,28 +174,28 @@ def create_appointment(appointment: Appointment):
 
 
 @app.delete("/api/v1/appointments/{appointment_id}")
-def delete_appointment(appointment_id):
+def delete_appointment(current_user: Annotated[AppUser, Depends(get_current_user)], appointment_id):
     with Session(engine) as session:
         session.query(Appointment).filter(Appointment.id == appointment_id).delete()
         session.commit()
 
 
 @app.get("/api/v1/clients")
-def get_clients():
+def get_clients(current_user: Annotated[AppUser, Depends(get_current_user)]):
     with Session(engine) as session:
         clients = session.exec(select(Client)).all()
     return clients
 
 
 @app.delete("/api/v1/clients/{client_id}")
-def delete_client_by_id(client_id):
+def delete_client_by_id(current_user: Annotated[AppUser, Depends(get_current_user)], client_id):
     with Session(engine) as session:
         session.query(Client).filter(Client.id == client_id).delete()
         session.commit()
 
 
 @app.post("/api/v1/clients")
-def create_client(client: Client):
+def create_client(current_user: Annotated[AppUser, Depends(get_current_user)], client: Client):
     with Session(engine) as session:
         db_client = client
         session.add(db_client)
