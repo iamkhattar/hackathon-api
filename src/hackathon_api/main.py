@@ -6,7 +6,7 @@ import uvicorn
 from fastapi import FastAPI, Response, Depends, HTTPException, status, Body
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from jose import JWTError
-from sqlalchemy import func
+from sqlalchemy import Date
 
 from db import create_db_and_tables, Appointment, Client, AppUser
 from config import settings
@@ -128,7 +128,7 @@ def get_appointments_for_worker(
         else:
             appointments = session.exec(
                 select(Appointment).where(
-                    func.date(Appointment.start_time) == datetime.now().date()
+                    Appointment.start_time.cast(Date) == datetime.now().date()
                 )
             ).all()
         return appointments
