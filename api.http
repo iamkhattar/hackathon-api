@@ -1,3 +1,5 @@
+### Create Client
+
 POST http://localhost/api/v1/clients
 Content-Type: application/json
 
@@ -8,10 +10,59 @@ Content-Type: application/json
   "phone": "001001010101013"
 }
 
-###
+### Get All Clients
 
 GET http://localhost/api/v1/clients
 
+### Delete Client by ID
 
-###
 DELETE http://localhost/api/v1/clients/1
+
+### Register a User
+
+POST http://localhost/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "a@mail.test",
+  "first_name": "Andy",
+  "last_name": "Smith",
+  "type": "worker",
+  "phone": "001001010101013"
+}
+
+### Login a User
+
+POST http://localhost/api/v1/users/login
+Authorization: Basic a@mail.test codefest
+
+### User Details
+
+GET http://localhost/api/v1/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhQG1haWwudGVzdCIsImZpcnN0X25hbWUiOiJBbmR5IiwibGFzdF9uYW1lIjoiU21pdGgiLCJ0eXBlIjoid29ya2VyIiwicGhvbmUiOiIwMDEwMDEwMTAxMDEwMTMifQ.kgXBsPwyQ98SCX9xCEENDALra6fOQNwifPkFTz3fwvM
+
+### Get all appointments
+
+GET http://localhost/api/v1/appointments
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhQG1haWwudGVzdCIsImZpcnN0X25hbWUiOiJBbmR5IiwibGFzdF9uYW1lIjoiU21pdGgiLCJ0eXBlIjoid29ya2VyIiwicGhvbmUiOiIwMDEwMDEwMTAxMDEwMTMifQ.kgXBsPwyQ98SCX9xCEENDALra6fOQNwifPkFTz3fwvM
+
+### Get an appointment
+
+GET http://localhost/api/v1/appointments/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhQG1haWwudGVzdCIsImZpcnN0X25hbWUiOiJBbmR5IiwibGFzdF9uYW1lIjoiU21pdGgiLCJ0eXBlIjoid29ya2VyIiwicGhvbmUiOiIwMDEwMDEwMTAxMDEwMTMifQ.kgXBsPwyQ98SCX9xCEENDALra6fOQNwifPkFTz3fwvM
+
+
+### Create an appointment
+
+POST http://localhost/api/v1/appointments
+Content-Type: application/json
+
+{
+  "client_id": 1,
+  "worker_id": 1,
+  "start_time": "2023-02-02 12:12:12",
+  "end_time": "2023-02-02 13:12:12",
+  "lat": 1.1,
+  "long": 1.2,
+  "address": "test"
+}
