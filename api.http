@@ -75,5 +75,23 @@ Content-Type: application/json
 }
 
 
-###
-GET http://localhost/api/v1/appointments-now
+### Update Appointment Status
+
+PUT http://localhost/api/v1/appointments/1/status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhQG1haWwudGVzdCIsImZpcnN0X25hbWUiOiJBbmR5IiwibGFzdF9uYW1lIjoiU21pdGgiLCJ0eXBlIjoid29ya2VyIiwicGhvbmUiOiIwMDEwMDEwMTAxMDEwMTMifQ.kgXBsPwyQ98SCX9xCEENDALra6fOQNwifPkFTz3fwvM
+Content-Type: application/json
+
+{
+  "status": "warning"
+}
+
+
+### Update Appointment Severity
+
+PUT http://localhost/api/v1/appointments/1/severity
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhQG1haWwudGVzdCIsImZpcnN0X25hbWUiOiJBbmR5IiwibGFzdF9uYW1lIjoiU21pdGgiLCJ0eXBlIjoid29ya2VyIiwicGhvbmUiOiIwMDEwMDEwMTAxMDEwMTMifQ.kgXBsPwyQ98SCX9xCEENDALra6fOQNwifPkFTz3fwvM
+Content-Type: application/json
+
+{
+  "status": "danger"
+}

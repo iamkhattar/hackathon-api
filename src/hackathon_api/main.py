@@ -6,7 +6,6 @@ import uvicorn
 from fastapi import FastAPI, Response, Depends, HTTPException, status, Body
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from jose import JWTError
-from pydantic import BaseModel
 from sqlalchemy import func
 
 from db import create_db_and_tables, Appointment, Client, AppUser
@@ -216,12 +215,13 @@ def create_client(
         session.refresh(db_client)
         return db_client
 
+
 @app.put("/api/v1/appointments/{appointment_id}/{status_field}")
 def change_appointment_status(
     current_user: Annotated[AppUser, Depends(get_current_user)],
     appointment_id,
     status_field,
-    updated_status: Annotated[str, Body(π)]
+    updated_status: Annotated[str, Body(alias="status", embed=True)],
 ):
     with Session(engine) as session:
         appointment = session.exec(
