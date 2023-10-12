@@ -1,6 +1,8 @@
+import json
 from typing import Annotated
 
 import jwt
+from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, Response, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
@@ -30,6 +32,8 @@ def on_startup():
 @app.post("/api/v1/users")
 def register_user(user: AppUser):
     with Session(engine) as session:
+        if user.type != "worker" and user.type != "manager":
+            return Response(status_code=422)
         db_user = user
         session.add(db_user)
         session.commit()
@@ -91,32 +95,60 @@ def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())
         )
 
 
-@app.get("/appointments")
+@app.get("/api/v1/appointments")
 def get_appointments_for_worker(
     current_user: Annotated[AppUser, Depends(get_current_user)]
 ):
     with Session(engine) as session:
-        appointments = session.exec(select(Appointment)).all()
+        if current_user.type == "worker":
+            appointments = session.exec(select(Appointment)).all()
+        else:
+            now = datetime.now()
+            print("hello", now)
+            appointments = session.exec(select(Appointment).where()).all()
         return appointments
 
 
-@app.get("/appointments/{id}")
+@app.get("/api/v1/appointments/{id}")
 def get_appointment_by_id(id):
     with Session(engine) as session:
-        appointment = session.exec(
-            select(Appointment).where(Appointment.id == id)
-        ).all()
-        return appointment
+        result = session.exec(
+            select(Appointment, Client, AppUser)
+            .where(Appointment.id == id)
+            .join(Client)
+            .where(Appointment.client_id == Client.id)
+            .join(AppUser)
+            .where(AppUser.id == Appointment.worker_id)
+        ).one()
+        return {
+            "end_time": result['Appointment'].end_time,
+            "long": result["Appointment"].long,
+            "appointment_status": result["Appointment"].appointment_status,
+            "start_time": result["Appointment"].start_time,
+            "id": result["Appointment"].id,
+            "lat": result["Appointment"].lat,
+            "address": result["Appointment"].address,
+            "severity_status": result["Appointment"].severity_status,
+            "client": result["Client"],
+            "worker": result["AppUser"]
+        }
 
 
-@app.post("/appointments")
+
+@app.post("/api/v1/appointments")
 def create_appointment(appointment: Appointment):
     with Session(engine) as session:
-        session.add(appointment)
+        worker = session.exec(select(AppUser).where(AppUser.id == appointment.worker_id)).one()
+        if not worker or worker.type != "worker":
+            return Response(status_code=422)
+        db_appointment = appointment
+        session.add(db_appointment)
         session.commit()
+        session.refresh(db_appointment)
+        return db_appointment
 
 
-@app.delete("/appointments/{appointment_id}")
+@app.delete("/api/v1/appointments/{appointment_id}")
 def delete_appointment(appointment_id):
     with Session(engine) as session:
         session.delete(Appointment.id == appointment_id)
