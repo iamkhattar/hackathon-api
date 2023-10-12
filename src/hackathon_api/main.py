@@ -138,7 +138,9 @@ def get_appointment_by_id(id):
 @app.post("/api/v1/appointments")
 def create_appointment(appointment: Appointment):
     with Session(engine) as session:
-        worker = session.exec(select(AppUser).where(AppUser.id == appointment.worker_id)).one()
+        worker = session.exec(
+            select(AppUser).where(AppUser.id == appointment.worker_id)
+        ).one()
         if not worker or worker.type != "worker":
             return Response(status_code=422)
         db_appointment = appointment
