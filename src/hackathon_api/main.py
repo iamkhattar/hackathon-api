@@ -127,11 +127,32 @@ def get_appointments_for_worker(
             return response
         else:
             appointments = session.exec(
-                select(Appointment).where(
-                    Appointment.start_time.cast(Date) == datetime.now().date()
-                )
+                select(Appointment, Client, AppUser)
+                .where(Appointment.start_time.cast(Date) == datetime.now().date())
+                .join(Client)
+                .where(Appointment.client_id == Client.id)
+                .join(AppUser)
+                .where(AppUser.id == Appointment.worker_id)
             ).all()
-        return appointments
+            response = []
+        for appointment in appointments:
+            response.append(
+                {
+                    "end_time": appointment["Appointment"].end_time,
+                    "long": appointment["Appointment"].long,
+                    "appointment_status": appointment[
+                        "Appointment"
+                    ].appointment_status,
+                    "start_time": appointment["Appointment"].start_time,
+                    "id": appointment["Appointment"].id,
+                    "lat": appointment["Appointment"].lat,
+                    "address": appointment["Appointment"].address,
+                    "severity_status": appointment["Appointment"].severity_status,
+                    "client": appointment["Client"],
+                    "worker": appointment["AppUser"],
+                }
+            )
+        return response
 
 
 @app.get("/api/v1/appointments/{appointment_id}")
