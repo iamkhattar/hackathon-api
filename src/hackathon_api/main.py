@@ -49,6 +49,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
         payload = jwt.decode(token, "secret", algorithms="HS256")
         user = AppUser(
+            id=payload.get("id"),
             email=payload.get("email"),
             first_name=payload.get("first_name"),
             last_name=payload.get("last_name"),
@@ -98,10 +99,31 @@ def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())
 def get_appointments_for_worker(
     current_user: Annotated[AppUser, Depends(get_current_user)]
 ):
-    # TODO
     with Session(engine) as session:
         if current_user.type == "worker":
-            appointments = session.exec(select(Appointment)).all()
+            appointments = session.exec(
+                select(Appointment, Client, AppUser)
+                .where(Appointment.worker_id == current_user.id)
+                .join(Client)
+                .where(Appointment.client_id == Client.id)
+                .join(AppUser)
+                .where(AppUser.id == Appointment.worker_id)
+            ).all()
+            response = []
+            for appointment in appointments:
+                response.append({
+                    "end_time": appointment['Appointment'].end_time,
+                    "long": appointment["Appointment"].long,
+                    "appointment_status": appointment["Appointment"].appointment_status,
+                    "start_time": appointment["Appointment"].start_time,
+                    "id": appointment["Appointment"].id,
+                    "lat": appointment["Appointment"].lat,
+                    "address": appointment["Appointment"].address,
+                    "severity_status": appointment["Appointment"].severity_status,
+                    "client": appointment["Client"],
+                    "worker": appointment["AppUser"]
+                })
+            return response
         else:
             now = datetime.now()
             print("hello", now)
@@ -134,7 +156,6 @@ def get_appointment_by_id(id):
         }
 
 
-
 @app.post("/api/v1/appointments")
 def create_appointment(appointment: Appointment):
     with Session(engine) as session:
@@ -152,9 +173,9 @@ def create_appointment(appointment: Appointment):
 
 @app.delete("/api/v1/appointments/{appointment_id}")
 def delete_appointment(appointment_id):
-    # TODO
     with Session(engine) as session:
-        session.delete(Appointment.id == appointment_id)
+        session.query(Appointment).filter(Appointment.id == appointment_id).delete()
+        session.commit()
 
 
 @app.get("/api/v1/clients")
