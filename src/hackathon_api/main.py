@@ -1,4 +1,3 @@
-import json
 from typing import Annotated
 
 import jwt
@@ -99,6 +98,7 @@ def login_user(credentials: Annotated[HTTPBasicCredentials, Depends(HTTPBasic())
 def get_appointments_for_worker(
     current_user: Annotated[AppUser, Depends(get_current_user)]
 ):
+    # TODO
     with Session(engine) as session:
         if current_user.type == "worker":
             appointments = session.exec(select(Appointment)).all()
@@ -150,6 +150,7 @@ def create_appointment(appointment: Appointment):
 
 @app.delete("/api/v1/appointments/{appointment_id}")
 def delete_appointment(appointment_id):
+    # TODO
     with Session(engine) as session:
         session.delete(Appointment.id == appointment_id)
 
